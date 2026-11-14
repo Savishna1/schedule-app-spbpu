@@ -13,3 +13,13 @@ class ChildRequest(BaseModel):
 
 class WeeklyScheduleRequest(BaseModel):
     children: List[ChildRequest]
+
+class OneTimeScheduleCreate(BaseModel):
+    program: str
+    study_year: int
+    group_number: str
+    date: date
+    start_time: str
+    end_time: str
+    room: str
+    teacher: str

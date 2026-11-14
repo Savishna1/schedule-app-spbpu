@@ -44,3 +44,18 @@ class DaySchedule(BaseModel):
 
     class Config:
         from_attributes = True
+
+class OneTimeScheduleResponse(BaseModel):
+    id: int
+    program: str
+    study_year: int
+    group_number: str
+    date: date
+    start_time: str
+    end_time: str
+    room: str
+    teacher: str
+    status: str
+
+    class Config:
+        from_attributes = True
