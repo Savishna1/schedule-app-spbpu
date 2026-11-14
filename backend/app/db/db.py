@@ -4,8 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
-basedir = os.path.dirname(os.path.abspath(__file__))
-
 load_dotenv()
 
 db_password = os.getenv("DB_PASSWORD")
