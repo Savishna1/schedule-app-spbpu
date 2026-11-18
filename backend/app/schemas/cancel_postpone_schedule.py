@@ -48,3 +48,18 @@ class PostponeCommandResponse(BaseModel):
     new_end_time: str
     new_room: str
     new_teacher: str
+
+class ScheduleExceptionResponse(BaseModel):
+    id: int
+    group_id: int
+    exception_date: Optional[date] = None
+    status: str  # отменено, перенесено, дополнительное
+    new_date: Optional[date] = None
+    new_start_time: Optional[str] = None
+    new_end_time: Optional[str] = None
+    new_room: Optional[str] = None
+    new_teacher: Optional[str] = None
+    group_name: Optional[str] = None
+
+    class Config:
+        from_attributes = True

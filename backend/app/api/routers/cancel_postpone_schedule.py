@@ -1,17 +1,20 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Query
 from app.models import models
 from app.schemas.ScheduleRequest import OneTimeScheduleCreate
 from app.schemas.ScheduleResponse import OneTimeScheduleResponse
 from app.schemas.cancel_postpone_schedule import (
     CancelCommandResponse,
     PostponeCommandResponse,
+    ScheduleExceptionResponse,
     LessonCancelConfirmation,
     LessonPostponeConfirmation,
 )
 from app.database.db import get_db
 from app.api.routers.check_admin import get_current_admin
+from datetime import date
 
 import requests
+from typing import List
 from sqlalchemy.orm import Session
 from app.models.models import DeviceSubscription, Group, ScheduleException
 from app.schemas.notification import NotificationMessage
@@ -20,7 +23,9 @@ EXPO_API_URL = "https://exp.host/--/api/v2/push/send"
 
 router = APIRouter()
 
+
 def send_notifications(notification: NotificationMessage, db: Session):
+    # Получаем подписки
     subscriptions = db.query(DeviceSubscription).filter(
         DeviceSubscription.group_id == notification.group_id
     ).all()
@@ -28,6 +33,7 @@ def send_notifications(notification: NotificationMessage, db: Session):
     if not subscriptions:
         return
 
+    # Уникальные токены
     tokens = list(set([sub.fcm_token for sub in subscriptions]))
 
     for token in tokens:
@@ -65,6 +71,7 @@ def send_notifications(notification: NotificationMessage, db: Session):
 
     db.commit()
 
+
 @router.post(
     "/lessons/confirm-action",
     response_model=CancelCommandResponse | PostponeCommandResponse,
@@ -94,6 +101,7 @@ def confirm_lesson_action(
 
         exception = models.ScheduleException(
             group_id=group_id,
+            schedule_id=schedule.id,          # ← ДОБАВЛЕНО
             exception_date=specific_date,
             status="отменено"
         )
@@ -114,6 +122,7 @@ def confirm_lesson_action(
 
         exception = models.ScheduleException(
             group_id=group_id,
+            schedule_id=schedule.id,          # ← ДОБАВЛЕНО
             exception_date=specific_date,
             status="перенесено",
             new_date=lesson_data.new_date,
@@ -142,6 +151,64 @@ def confirm_lesson_action(
         )
     else:
         raise HTTPException(status_code=400, detail="Invalid request type")
+
+
+@router.delete("/exceptions", status_code=status.HTTP_204_NO_CONTENT)
+def delete_exception(
+        group_id: int,
+        exception_date: date,
+        status: str = Query(..., description="Тип исключения: отменено, перенесено, дополнительное"),
+        db: Session = Depends(get_db),
+        _=Depends(get_current_admin)
+):
+    """
+    Удалить исключение (отмену, перенос или доп. занятие).
+    status обязателен.
+    """
+    if status == "дополнительное":
+        exception = db.query(ScheduleException).filter_by(
+            group_id=group_id,
+            new_date=exception_date,
+            status=status
+        ).first()
+    else:
+        exception = db.query(ScheduleException).filter_by(
+            group_id=group_id,
+            exception_date=exception_date,
+            status=status
+        ).first()
+
+    if not exception:
+        raise HTTPException(status_code=404, detail="Exception not found")
+
+    group = db.query(Group).filter(Group.id == group_id).first()
+    group_name = group.name if group else "занятие"
+
+    if status == "отменено":
+        title = "Отмена занятия отменена"
+        body = f"{group_name}\nЗанятие на {exception_date} снова состоится по расписанию"
+    elif status == "перенесено":
+        title = "Перенос занятия отменён"
+        body = f"{group_name}\nЗанятие на {exception_date} снова состоится по расписанию"
+    elif status == "дополнительное":
+        actual_date = exception.new_date or exception_date
+        title = "Дополнительное занятие отменено"
+        body = f"{group_name}\nДоп. занятие на {actual_date} отменено"
+    else:
+        title = "Изменение в расписании"
+        body = f"{group_name}\nИзменение в расписании"
+
+    db.delete(exception)
+    db.commit()
+
+    send_notifications(NotificationMessage(
+        group_id=group_id,
+        title=title,
+        body=body
+    ), db)
+
+    return
+
 
 @router.post("/one-time", response_model=OneTimeScheduleResponse, status_code=status.HTTP_201_CREATED)
 def create_one_time_schedule(
@@ -194,3 +261,37 @@ def create_one_time_schedule(
         teacher=exception.new_teacher,
         status=exception.status
     )
+
+
+RECENT_LIMIT = 15
+
+
+@router.get("/recent", response_model=List[ScheduleExceptionResponse])
+def get_recent_exceptions(
+        db: Session = Depends(get_db),
+        _=Depends(get_current_admin)
+):
+    """
+    Получить последние 15 отмен, переносов и доп. занятий.
+    """
+    exceptions = db.query(ScheduleException).order_by(
+        ScheduleException.id.desc()
+    ).limit(RECENT_LIMIT).all()
+
+    result = []
+    for exc in exceptions:
+        group = db.query(Group).filter(Group.id == exc.group_id).first()
+        result.append(ScheduleExceptionResponse(
+            id=exc.id,
+            group_id=exc.group_id,
+            exception_date=exc.exception_date,
+            status=exc.status,
+            new_date=exc.new_date,
+            new_start_time=exc.new_start_time,
+            new_end_time=exc.new_end_time,
+            new_room=exc.new_room,
+            new_teacher=exc.new_teacher,
+            group_name=group.name if group else None
+        ))
+
+    return result
