@@ -78,7 +78,7 @@ def build_teacher_weekly_schedule(
                 group = e.group
                 if group:
                     lessons.append(ScheduleItem(
-                        id=e.id,
+                        id=e.schedule_id or e.id,   # ← ВАЖНО: чтобы фронт знал schedule_id
                         start_time=e.new_start_time,
                         end_time=e.new_end_time,
                         program_name=group.name,
@@ -95,8 +95,9 @@ def build_teacher_weekly_schedule(
             if schedule.day_of_week != day_name:
                 continue
 
+            # Ищем исключение по конкретному занятию (schedule_id)
             exception = next(
-                (e for e in all_exceptions if e.group_id == schedule.group_id and e.exception_date == day),
+                (e for e in all_exceptions if e.schedule_id == schedule.id and e.exception_date == day),
                 None
             )
 

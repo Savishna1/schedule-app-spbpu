@@ -25,6 +25,7 @@ router = APIRouter()
 
 
 def send_notifications(notification: NotificationMessage, db: Session):
+    # Получаем подписки
     subscriptions = db.query(DeviceSubscription).filter(
         DeviceSubscription.group_id == notification.group_id
     ).all()
@@ -32,6 +33,7 @@ def send_notifications(notification: NotificationMessage, db: Session):
     if not subscriptions:
         return
 
+    # Уникальные токены
     tokens = list(set([sub.fcm_token for sub in subscriptions]))
 
     for token in tokens:
@@ -99,6 +101,7 @@ def confirm_lesson_action(
 
         exception = models.ScheduleException(
             group_id=group_id,
+            schedule_id=schedule.id,          # ← ДОБАВЛЕНО
             exception_date=specific_date,
             status="отменено"
         )
@@ -119,6 +122,7 @@ def confirm_lesson_action(
 
         exception = models.ScheduleException(
             group_id=group_id,
+            schedule_id=schedule.id,          # ← ДОБАВЛЕНО
             exception_date=specific_date,
             status="перенесено",
             new_date=lesson_data.new_date,
@@ -157,6 +161,10 @@ def delete_exception(
         db: Session = Depends(get_db),
         _=Depends(get_current_admin)
 ):
+    """
+    Удалить исключение (отмену, перенос или доп. занятие).
+    status обязателен.
+    """
     if status == "дополнительное":
         exception = db.query(ScheduleException).filter_by(
             group_id=group_id,
@@ -263,6 +271,9 @@ def get_recent_exceptions(
         db: Session = Depends(get_db),
         _=Depends(get_current_admin)
 ):
+    """
+    Получить последние 15 отмен, переносов и доп. занятий.
+    """
     exceptions = db.query(ScheduleException).order_by(
         ScheduleException.id.desc()
     ).limit(RECENT_LIMIT).all()

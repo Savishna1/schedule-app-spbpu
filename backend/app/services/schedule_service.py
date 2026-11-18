@@ -7,6 +7,7 @@ from app.schemas.ScheduleRequest import WeeklyScheduleRequest
 from app.schemas.ScheduleResponse import DaySchedule, ScheduleItem, ScheduleStatus
 from app.services.schedule_common import DAY_NAMES, build_empty_week
 
+
 def build_weekly_schedule(
     db: Session,
     request: WeeklyScheduleRequest,
@@ -66,6 +67,7 @@ def build_weekly_schedule(
         day_name = DAY_NAMES[day.weekday()]
         lessons = []
 
+        # === ДОПОЛНИТЕЛЬНЫЕ ЗАНЯТИЯ (по new_date) ===
         for e in exceptions:
             if e.status == "дополнительное" and e.new_date == day:
                 group = group_map.get(e.group_id)
@@ -85,6 +87,7 @@ def build_weekly_schedule(
                         new_end_time=None
                     ))
 
+        # === ОСНОВНЫЕ ЗАНЯТИЯ (по шаблону) ===
         for group_id, schedules_list in group_schedules.items():
             group = group_map.get(group_id)
             if not group:
@@ -98,8 +101,9 @@ def build_weekly_schedule(
             if not day_schedule:
                 continue
 
+            # Ищем исключение по конкретному занятию (schedule_id)
             exception = next(
-                (e for e in exceptions if e.group_id == group_id and e.exception_date == day),
+                (e for e in exceptions if e.schedule_id == day_schedule.id and e.exception_date == day),
                 None
             )
 
@@ -162,6 +166,7 @@ def build_weekly_schedule(
             lessons=lessons
         ))
 
+    # === ПЕРЕНЕСЁННЫЕ ЗАНЯТИЯ В НОВУЮ ДАТУ ===
     for exception in exceptions:
         if exception.status != "перенесено":
             continue
@@ -180,7 +185,7 @@ def build_weekly_schedule(
                 )
                 if not already_added:
                     day_schedule.lessons.append(ScheduleItem(
-                        id=exception.id,
+                        id=exception.schedule_id or exception.id,
                         start_time=exception.new_start_time,
                         end_time=exception.new_end_time,
                         program_name=group.name,

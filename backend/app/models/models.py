@@ -46,6 +46,7 @@ class ScheduleException(Base):
 
     id = Column(Integer, primary_key=True)
     group_id = Column(Integer, ForeignKey('groups.id'), nullable=False)
+    schedule_id = Column(Integer, ForeignKey('schedules.id'), nullable=True)
     exception_date = Column(Date, nullable=True)  # Дата, когда произошло изменение
     status = Column(String(20))                   # отменено / перенесено / дополнительное
     # Новое время (если перенесено)
