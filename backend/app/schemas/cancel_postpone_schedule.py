@@ -1,5 +1,6 @@
 from pydantic import BaseModel, field_validator
 from datetime import date
+from typing import Optional
 
 class CanceledLessonData(BaseModel):
     id: int
