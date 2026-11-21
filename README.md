@@ -11,7 +11,8 @@ UI: React Native (Expo, managed workflow) — мобильное приложе�
 Инфраструктура: Docker, docker-compose, деплой бэкенда на Render.
 Оценка нагрузки: ~10 000 пользователей в сутки, период хранения данных — более 5 лет. Характер нагрузки — read-heavy (большинство операций — чтение расписания).
 
-[erDiagram
+```mermaid
+erDiagram
     GROUP ||--o{ SCHEDULE : "имеет занятия"
     GROUP ||--o{ SCHEDULE_EXCEPTION : "имеет исключения"
     GROUP ||--o{ DEVICE_SUBSCRIPTION : "имеет подписчиков"
@@ -53,4 +54,5 @@ UI: React Native (Expo, managed workflow) — мобильное приложе�
         int group_id FK
         string expo_push_token
         datetime created_at
-    }]
+    }
+```
