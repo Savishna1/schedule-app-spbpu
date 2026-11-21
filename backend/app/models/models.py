@@ -12,7 +12,6 @@ class Group(Base):
     number = Column(String(20))             # номер группы (например, "101")
     study_year = Column(Integer)            # год обучения
     teacher_id = Column(Integer, ForeignKey('teachers.id'), nullable=True)
-    from_excel = Column(Boolean, default=False, nullable=False)
 
     teacher = relationship("Teacher", back_populates="groups")
     schedules = relationship("Schedule", back_populates="group")
@@ -30,7 +29,6 @@ class Schedule(Base):
     time = Column(String, nullable=True)
     room = Column(String(50))
     teacher = Column(String(100))
-    from_excel = Column(Boolean, default=False, nullable=False)
 
     group = relationship("Group", back_populates="schedules")
 
@@ -67,7 +65,6 @@ class Teacher(Base):
     name = Column(String(200), nullable=False)      # ФИО преподавателя
     bio = Column(String, nullable=True)             # биография
     photo_url = Column(String, nullable=True)
-    from_excel = Column(Boolean, default=False, nullable=False)
 
     groups = relationship("Group", back_populates="teacher")
 
