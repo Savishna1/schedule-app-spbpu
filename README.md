@@ -13,32 +13,58 @@ UI: React Native (Expo, managed workflow) — мобильное приложе�
 
 ```mermaid
 erDiagram
-    GROUP ||--o{ SCHEDULE : "имеет занятия"
-    GROUP ||--o{ SCHEDULE_EXCEPTION : "имеет исключения"
-    GROUP ||--o{ DEVICE_SUBSCRIPTION : "имеет подписчиков"
+    COURSES ||--o{ GROUPS : "содержит"
+    TEACHERS ||--o{ GROUPS : "преподает"
+    GROUPS ||--o{ SCHEDULES : "имеет занятия"
+    GROUPS ||--o{ DEVICE_SUBSCRIPTIONS : "имеет подписчиков"
+    GROUPS ||--o{ SCHEDULE_EXCEPTIONS : "имеет исключения"
+    SCHEDULES ||--o{ SCHEDULE_EXCEPTIONS : "имеет изменения"
 
-    GROUP {
+    COURSES {
+        int id PK
+        string title
+        string age
+        string duration
+        string type
+        int price
+        string enrollment_url
+        string description
+        bool has_places
+        string materials
+    }
+
+    TEACHERS {
+        int id PK
+        string name
+        string bio
+        string photo_url
+    }
+
+    GROUPS {
         int id PK
         string name
         string number
         int study_year
-        bool from_excel
+        int course_id FK
+        string duration
+        int teacher_id FK
     }
 
-    SCHEDULE {
+    SCHEDULES {
         int id PK
         int group_id FK
         string day_of_week
         string start_time
         string end_time
+        string time
         string room
         string teacher
-        bool from_excel
     }
 
-    SCHEDULE_EXCEPTION {
+    SCHEDULE_EXCEPTIONS {
         int id PK
         int group_id FK
+        int schedule_id FK
         date exception_date
         string status
         date new_date
@@ -49,10 +75,9 @@ erDiagram
         string reason
     }
 
-    DEVICE_SUBSCRIPTION {
+    DEVICE_SUBSCRIPTIONS {
         int id PK
+        string fcm_token
         int group_id FK
-        string expo_push_token
-        datetime created_at
     }
 ```
