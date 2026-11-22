@@ -1,0 +1,34 @@
+expo-env.d.ts
+
+node_modules/
+
+# Локальное состояние Expo
+.expo/
+
+# Секреты и переменные окружения
+.env
+.env.*
+
+# Нативные папки (managed workflow, генерируются при prebuild)
+/android
+/ios
+
+# Сборки
+dist/
+web-build/
+*.apk
+*.aab
+
+# Ключи и сертификаты
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Логи и системные файлы
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.DS_Store
