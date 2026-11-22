@@ -1,0 +1,36 @@
+{
+  "cli": {
+    "version": ">= 27.10.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://schedule-app-spbpu.onrender.com"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://schedule-app-spbpu-prod.onrender.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://schedule-app-spbpu-prod.onrender.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
