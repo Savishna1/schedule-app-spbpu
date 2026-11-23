@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Доп. образование",
+    "slug": "schedule-app-spbpu",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "scheduleappspbpu",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dariakhokhryakova.scheduleappspbpu"
+    },
+    "android": {
+      "package": "com.dariakhokhryakova.scheduleappspbpu",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "googleServicesFile": "./google-services.json"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#3958a3"
+        }
+      ],
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "84025816-a0ce-4ab4-b5f7-144607c0d55e"
+      }
+    },
+    "owner": "dariakhokhryakova"
+  }
+}
